@@ -1,29 +1,82 @@
 import React, {useContext, useEffect, useState} from "react";
-import {Text, View, StyleSheet, Dimensions} from "react-native";
+import {Text, View, StyleSheet,ScrollView, Dimensions} from "react-native";
 import SubmitButton from "../../../component/SubmitButton";
-//import {Dropdown} from "react-native-element-dropdown";
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import icons from "../../../../assets/image/tagicon";
 import axios from "axios";
 import {AuthContext} from "../../../../Context/auth";
 import InputBox from "../../../component/InputBox";
-import icon from "../../../../assets/image/remainderIcon";
+import remainderIcon from "../../../../assets/image/remainderIcon";
 import DropDownPicker from 'react-native-dropdown-picker';
+import {useNavigation} from "@react-navigation/native";
+import CircleProfile from "../../../component/CircleProfile";
+import BouncyCheckboxGroup, {
+    ICheckboxButton,
+  } from "react-native-bouncy-checkbox-group";
 
 
-const AddTransaction = () => {
+
+
+
+const AddTransaction = (props) => {
     const [state,setState] = useContext(AuthContext);
     const [tagOpen, setTagOpen] = useState(false);
-    const [tagValues, setTagValues] = useState([]);
-    const [tags, setTags] = useState([
-    {label: 'Apple', value: 'apple'},
-    {label: 'Banana', value: 'banana'}
-  ]);
-  DropDownPicker.setMode("BADGE");
+    const [tagValue, setTagValue] = useState(-1);
+    const [tags, setTags] = useState([]);
+    const [reminderOpen, setReminderOpen] = useState(false);
+    const [reminderValue, setReminderValue] = useState();
+    const [reminders, setReminders] = useState([]);
+    const navigation = useNavigation();
+    const [transactionName, setTransactionName] = useState('');
+    const[transactionPrice,setTransactionPrice] = useState('');
+    const [icon,setIcon] = useState("");
+    const [deposit,setDeposit] = useState(false);
+    const clearAll=()=>{
+        setTagValue(-1)
+        setReminderValue('')
+        setIcon('')
+        setTransactionName('')
+        setTransactionPrice('')
+    }
+    const staticData = [{
+        id: 0,
+        text:'واریز',
+        fillColor:'#5724AB',
+        textStyle:{
+            fontSize: 16,
+            fontFamily:'Shabnam-FD',
+            color:'#5724AB',
+            textDecorationLine: "none",
+        },
+        style:{
+            marginLeft:30
+        }
+      },
+      {
+        id: 1,
+        text:'برداشت',
+        fillColor:'#5724AB',
+        textStyle:{
+            fontSize: 16,
+            fontFamily:'Shabnam-FD',
+            color:'#5724AB',
+            textDecorationLine: "none",
+        },
+        isChecked:true,
     
-    const renderTagIcon = (icon,color) => {
+      }
+      ]
+
+    useEffect(()=>{
+        if(tagValue!==-1){
+            const x = tags.find(item=>item.value===tagValue);
+            const y = icons.find(item=>item.id===x.aks);
+            setIcon(y);
+        }
+    
+    },[tagValue])
+    const renderIcon = (icon,style) => {
         return(
-            <View style={[styles.tagIcon,{backgroundColor:color}]}>
+            <View style={[styles.tagIcon,style]}>
                 <icon.svg style={{height:6,width:6}}/>
             </View>
         );
@@ -45,7 +98,8 @@ const AddTransaction = () => {
                             {
                                 label:item.name,
                                 value:item.id,
-                                icon:()=>renderTagIcon(aks,item.color),
+                                aks:item.icon,
+                                icon:()=>renderIcon(aks,{backgroundColor:item.color}),
                                 containerStyle: {
                                    marginBottom:5
                                   },
@@ -64,6 +118,7 @@ const AddTransaction = () => {
         }
     }
     const loadRemaindersFromApi= async(token,id)=> {
+        console.log('inja hasim');
         let config = {
             headers: {
                 Authorization: 'Bearer ' + token
@@ -71,7 +126,25 @@ const AddTransaction = () => {
         }
         const URL = `/invoices/${id}/reminders/`;
         try {
-            const {data} = await axios.get(URL, config).then((response)=>{setRemainders(response.data.data)}).catch(error => {
+            const {data} = await axios.get(URL, config).then((response)=>{
+                //setRemainders(response.data.data)
+                let x = [];
+                    response.data.data.map((item)=>{
+                    
+                        let aks = remainderIcon.find((i)=>i.id===item.icon);
+                        x.push(
+                            {
+                                label:item.name,
+                                value:item.id,
+                                icon:()=>renderIcon(aks,{borderColor:item.color,borderWidth:2 , backgroundColor:'#fff'}),
+                                containerStyle: {
+                                    marginVertical:5
+                                  },
+                            }
+                            )
+                    });
+                    setReminders(x)
+            }).catch(error => {
                 console.log(error)
             })
             console.log(data)
@@ -80,127 +153,106 @@ const AddTransaction = () => {
             console.log(e.response)
         }
     }
-    const pressSubmit = async ()=>{}
+    const pressSubmit = async ()=>{
+        let config = {
+            headers: {
+                Authorization: 'Bearer ' + state.data.access
+            }
+        }
+        const URL = `invoices/${state.defaultInvoiceId}/reminders/${reminderValue}/transactions/`
+        try {
+           const {data} = axios.post(URL,{
+            name:transactionName,
+            color:icon?icon.color:'#0DEAD0',
+            icon:icon?icon.id:'i000001',
+            price:deposit?transactionPrice:transactionPrice*-1,
+            tags:[tagValue]
+           },config).then((response)=>{
+            clearAll();
+            navigation.navigate('Home',{'paramPropKey': 'paramPropValue'})
+           })
+           
+        } catch (error) {
+            console.log('error post Transaction ',error);
+        }
+    }
     useEffect(()=>{
         loadTagsFromApi(state.data.access,state.defaultInvoiceId)
         loadRemaindersFromApi(state.data.access, state.defaultInvoiceId)
-    },[])
+    },[props.route.params])
     return(
         <View style={styles.body}>
             <View style={styles.container}>
                 <View style={styles.iconPickerBox}>
-
+                    <CircleProfile icon={icon}/>
                 </View>
                 <View style={styles.inputBox}>
-                <DropDownPicker
-                    multiple={true}
-                    min={0}
-                    max={3}
-                    open={tagOpen}
-                    value={tagValues}
-                    items={tags}
-                    setOpen={setTagOpen}
-                    setValue={setTagValues}
-                    setItems={setTags}
-                    dropDownContainerStyle={{
-                        borderWidth:0,
-                        backgroundColor:'#FAF8F0',
-                        borderBottomColor:'#5724AB',
-                        borderBottomWidth:2
-                    }}
-                    containerStyle={{
-                        width:222,
-                    
-                    }}
-                    
-                    style={{
-                        backgroundColor:'transparent',
-                        width:222,
-                        borderWidth:0,
-                        borderBottomWidth:2,
-                        borderBottomColor:'#5724AB',
-                        marginBottom:25,
-                        borderRadius:0
-                      }}
-                    badgeColors={["red", "blue", "orange"]}
-                    badgeSeparatorStyle={{
-                        width: 5
-                      }}
-                      placeholderStyle={{
-                        color: "#8A7F9D",
-                        opacity: 0.8,
-                    }}
-                    textStyle={
-                        {
-                            fontSize: 16,
-                            color:'#8A7F9D',
-                            fontFamily:'Shabnam-FD'
-                        }
-                    }
-                    translation={{
-                        PLACEHOLDER: "دسته تراکنش",
-                      }}
-                    rtl={true}
-                />
-                    {/* <Dropdown
-                        style={styles.dropdown}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={tags}
-                        maxHeight={300}
-                        labelField="name"
-                        valueField='name'
-                        placeholder="نام دسته تراکنش"
-                        value={tagValue}
-                        onChange={item => {
-                            setTagValue(item.name);
-                        }}
-                        renderLeftIcon={() => (
-                            <AntDesign
-                                style={styles.icon}
-                                color={'blue'}
-                                name="down"
-                                size={20}
-                            />
-                        )}
-                        renderRightIcon={() => null}
-                        renderItem={renderTagItem}
-                    /> */}
+                    <DropDownPicker
+                            hideSelectedItemIcon={true}
+                            open={tagOpen}
+                            value={tagValue}
+                            items={tags}
+                            setOpen={setTagOpen}
+                            setValue={setTagValue}
+                            setItems={setTags}
+                            dropDownContainerStyle={styles.dropDownContainerStyle}
+                            containerStyle={{width:222,}}
+                            style={styles.dropDownstyle}
+                            badgeColors={["red", "blue", "orange"]}
+                            badgeSeparatorStyle={{width: 5}}
+                            placeholderStyle={styles.dropDownplaceholderStyle}
+                            textStyle={styles.dropDowntextStyle}
+                            translation={{
+                                PLACEHOLDER: "دسته تراکنش",
+                            }}
+                            rtl={true}
+                        />
                     <InputBox
                         placeholder={'نام تراکنش'}
+                        value={transactionName}
+                        onChangeText={(text)=>setTransactionName(text)}
+                        
                     />
-                    {/* <Dropdown
-                        style={styles.dropdown}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={remainders}
-                        maxHeight={300}
-                        labelField="name"
-                        valueField='name'
-                        placeholder="انتخاب ریمایندر"
-                        value={remainderValue}
-                        onChange={item => {
-                            setRemainderValue(item.name);
-                        }}
-                        renderLeftIcon={() => (
-                            <AntDesign
-                                style={styles.icon}
-                                color={'blue'}
-                                name="down"
-                                size={20}
-                            />
-                        )}
-                        renderRightIcon={() => null}
-                        renderItem={renderRemainderItem}
-                    /> */}
+                    
+                        <DropDownPicker
+                            zIndex={1000}
+                            zIndexInverse={3000}
+                            open={reminderOpen}
+                            value={reminderValue}
+                            items={reminders}
+                            setOpen={setReminderOpen}
+                            setValue={setReminderValue}
+                            setItems={setReminders}
+                            dropDownContainerStyle={styles.dropDownContainerStyle}
+                            containerStyle={{width:222}}
+                            style={[styles.dropDownstyle,{height:30,marginBottom:60}]}
+                            placeholderStyle={styles.dropDownplaceholderStyle}
+                            textStyle={styles.dropDowntextStyle}
+                            translation={{
+                                PLACEHOLDER: "ریمایندر",
+                            }}
+                            rtl={true}
+                    />
+                    
                     <InputBox
                         placeholder={'مبلغ'}
                         keyboardType={"number-pad"}
+                        value={transactionPrice}
+                        onChangeText={(text)=>setTransactionPrice(text)}
                     />
+                    <View>
+                    <BouncyCheckboxGroup
+                        data={staticData}
+                        style={{flexDirection:"row-reverse"}}
+                        onChange={(selectedItem) => {
+                            if(selectedItem.id===0){
+                                setDeposit(true)
+                            }else{
+                                setDeposit(false)
+                            }                            
+                        }}
+                    />
+                    </View>
                 </View>
                 <View style={styles.submitButtonBox}>
                     <SubmitButton label={'ثبت'} onPress={()=>pressSubmit()}/>
@@ -222,6 +274,8 @@ const styles = StyleSheet.create({
     iconPickerBox:{
         flex:1,
         justifyContent:"flex-end",
+        alignItems:"center",
+        marginBottom:20
     },
     inputBox:{
       flex:2,
@@ -292,6 +346,35 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         
-    }
+    },
+    
+        dropDownContainerStyle: {
+            flex:1,
+            borderWidth:0,
+            backgroundColor:'#FAF8F0',
+            borderBottomColor:'#5724AB',
+            borderBottomWidth:2
+        },
+        dropDownstyle:{
+            backgroundColor:'transparent',
+            width:222,
+            height:60,
+            borderWidth:0,
+            borderBottomWidth:2,
+            borderBottomColor:'#5724AB',
+            marginBottom:25,
+            borderRadius:0
+        },
+        dropDownplaceholderStyle:{
+            color: "#8A7F9D",
+            opacity: 0.8,
+        },
+        dropDowntextStyle:{
+            fontSize: 16,
+            color:'#8A7F9D',
+            fontFamily:'Shabnam-FD'
+        }
+
+    
 });
 export default AddTransaction;

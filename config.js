@@ -1,3 +1,3 @@
 
-// export const API = 'http://10.0.2.2:8000/api';
-export const API = 'https://tiny-paths-return-185-246-4-1.loca.lt/api';
+export const API = 'http://10.0.2.2:8000/api';
+//export const API = 'https://cold-coats-tell-5-213-117-98.loca.lt/api';

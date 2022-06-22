@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, StyleSheet, Text, Pressable, View ,TouchableWithoutFeedback} from "react-native";
 import DatePicker from '@mohamadkh75/react-native-jalali-datepicker';
+import jalaali from "../utils/pDate";
 
 const DatePickerJalali = (props) => {
   return(
@@ -27,10 +28,10 @@ const DatePickerJalali = (props) => {
                                   borderRadius: 20,
                                   elevation: 4
                               }}
-                              selected='1399/1/18'
+                              selected={jalaali.formatJalaali(jalaali.getJalali(new Date()))}
                               dateSeparator='/'
-                              minDate='1398/1/18'
-                              maxDate='1402/1/18'
+                              minDate={jalaali.formatJalaali(jalaali.getJalali(new Date()))}
+                              maxDate='1405/1/18'
                               headerContainerStyle={{ height: '15%' }}
                               yearMonthBoxStyle={{
                                   width: '30%',
@@ -118,10 +119,10 @@ const DatePickerJalali = (props) => {
                               {
                                   console.log(date)
                                   const myArray = date.split('/')
-                                  props.setYear(myArray[0])
-                                  props.setMonth(myArray[1])
-                                  props.setDay(myArray[2])
-                                  props.setVisible(!props.visible)
+                                  props.setYear?.(myArray[0])
+                                  props.setMonth?.(myArray[1])
+                                  props.setDay?.(myArray[2])
+                                  props.setVisible?.(!props.visible)
                               }
                           }
                           />

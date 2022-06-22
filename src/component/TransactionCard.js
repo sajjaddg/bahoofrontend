@@ -1,6 +1,8 @@
-import React from "react";
-import {View, StyleSheet, Dimensions, Text} from "react-native";
+import React, { useState } from "react";
+import {View, StyleSheet, Dimensions, Text,Animated} from "react-native";
 import {ReactNativeNumberFormat} from "../utils/ReactNativeNumberFormat";
+import Swipeable from 'react-native-gesture-handler/Swipeable'
+
 
 const TreansactionCard = (props) => {
 
@@ -8,6 +10,11 @@ const TreansactionCard = (props) => {
         <View style={[styles.container, props.mainStyle]}>
             <View style={styles.iconBox}>
                 <View style={[styles.circle,props.circleStyle]}>
+                    {
+                        props.icon?<props.icon.svg width={38}height={38}/>:null
+                        
+                    }
+                    
                 </View>
             </View>
             <View style={styles.textBox}>
@@ -61,6 +68,9 @@ const styles = StyleSheet.create({
         flex:3
     },
     titer:{
+        paddingTop:20,
+        justifyContent:'center',
+        alignItems:'center',
         textAlign:"right",
         fontSize:16,
         marginLeft:10,

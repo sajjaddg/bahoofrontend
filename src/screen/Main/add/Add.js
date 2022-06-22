@@ -21,6 +21,7 @@ const Add =()=>{
                         tabBarIndicatorStyle: {
                             borderBottomColor: '#5724AB',
                             borderBottomWidth: 4,
+                            borderRadius:4
                         }
                     }}
                 >
@@ -39,7 +40,11 @@ const Add =()=>{
                                     :<Text style={[styles.labelStyle,{color:'#8A7F9D'}]}>{'تراکنش'}</Text>
                             )
                         }
-                    }}/>
+                    }}
+                    listeners={({ navigation }) => ({
+                        blur: () => navigation.setParams({ screen: 'undefined' }),
+                      })}
+                    />
                 </Tab.Navigator>
             </View>
         </View>

@@ -10,6 +10,10 @@ const CircleIcon = (props) => {
                   :
                   null
               }
+               {
+                        props.icon?<props.icon.svg width={35}height={35}/>:null
+                        
+                }
           </View>
           {props.title?
               <View style={{alignItems:'center' , marginTop:5}}>

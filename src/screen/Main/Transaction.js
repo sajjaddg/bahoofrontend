@@ -1,9 +1,69 @@
-import React from "react";
+import React,{useEffect,useState,useContext} from "react";
 import {Text,StyleSheet,View,ScrollView} from "react-native";
+import {AuthContext} from "../../../Context/auth";
 import CircleIcon from "../../component/CircleIcon";
 import TransactionCard from "../../component/TransactionCard";
+import axios from "axios";
+import icons from "../../../assets/image/tagicon";
+import jalaali from "../../utils/pDate";
+import {useNavigation} from "@react-navigation/native";
 
-const Transaction = () => {
+const Transaction = (props) => {
+    const [state,setState] = useContext(AuthContext);
+    const[tags,setTags] = useState([]);
+    const navigation = useNavigation();
+    const[transactions,setTransactions] = useState([]);
+
+    const loadTransactionFromApi= async(token, invoiceId)=> {
+        let config = {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        }
+        const URL = `/invoices/${invoiceId}/transactions`;
+        try {
+            const {data} = await axios.get(URL, config).then((response)=>{
+                console.log(response);
+                setTransactions(response.data.data)
+            }).catch(error => {
+                console.log(error)
+            })
+            console.log(data)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+    const loadTagsFromApi = async (token,id)=>{
+        let config = {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        }
+        const URL = `/invoices/${id}/tags/`;
+        try {
+            const {data} = await axios.get(URL, config).then((response)=>
+                {
+                    setTags(response.data.data)
+                }
+            ).catch(error => {
+                console.log(error)
+            })
+            console.log(data)
+        }
+        catch (e) {
+            console.log(e.response)
+        }
+    }
+    useEffect(()=>{
+        const unsubscribe = navigation.addListener('tabPress', (e) => {
+            loadTransactionFromApi(state.data.access,state.defaultInvoiceId);
+            loadTagsFromApi(state.data.access,state.defaultInvoiceId);
+            navigation.navigate('Transaction')
+        })
+        loadTagsFromApi(state.data.access,state.defaultInvoiceId);
+        loadTransactionFromApi(state.data.access,state.defaultInvoiceId);
+    },[props.navigation])
     return(
         <View style={styles.body}>
             <View style={styles.container}>
@@ -11,41 +71,21 @@ const Transaction = () => {
                     <View>
                         <Text style={styles.title}> دسته بندی ها </Text>
                     </View>
-                    <View style={{marginTop:10}}>
+                    <View style={{marginTop:25}}>
                         <ScrollView
                             horizontal={true}
                             showsHorizontalScrollIndicator={false}
                         >
-                            <CircleIcon
-                                circleStyle={{backgroundColor: '#CB98FF'}}
-                                iconDisable={true}
-                                title={'پوشاک'}
-                            />
-                            <CircleIcon
-                                        circleStyle={{backgroundColor: '#8C2ADA'}}
-                                        iconDisable={true}
-                                        title={'کافه'}
-                            />
-                            <CircleIcon
-                                circleStyle={{backgroundColor: '#7C50FC'}}
-                                iconDisable={true}
-                                title={'شارژ'}
-                            />
-                            <CircleIcon
-                                circleStyle={{backgroundColor: '#CB98FF'}}
-                                iconDisable={true}
-                                title={'پوشاک'}
-                            />
-                            <CircleIcon
-                                circleStyle={{backgroundColor: '#8C2ADA'}}
-                                iconDisable={true}
-                                title={'کافه'}
-                            />
-                            <CircleIcon
-                                circleStyle={{backgroundColor: '#7C50FC'}}
-                                iconDisable={true}
-                                title={'شارژ'}
-                            />
+                            {tags?.map(item=>{
+                                return(
+                                    <CircleIcon
+                                        key={item.id}
+                                        title={item.name}
+                                        circleStyle={{backgroundColor: item.color}}
+                                        icon={icons.find(icon=>icon.id===item.icon)}
+                                    />
+                                )
+                            })}
                         </ScrollView>
                     </View>
                 </View>
@@ -62,87 +102,21 @@ const Transaction = () => {
                             showsVerticalScrollIndicator={false}
 
                         >
-                            <TransactionCard
-                                title={'سفر بوشهر'}
-                                date={'1/5/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#84C4FF'
-                                }}
-                                balance={'800000'}
-                                deposit={true}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'600000'}
-                                deposit={false}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'400000'}
-                                deposit={true}
-                            />
-                            <TransactionCard
-                                title={'سفر بوشهر'}
-                                date={'1/5/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#84C4FF'
-                                }}
-                                balance={'800000'}
-                                deposit={true}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'600000'}
-                                deposit={false}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'400000'}
-                                deposit={true}
-                            />
-                            <TransactionCard
-                                title={'سفر بوشهر'}
-                                date={'1/5/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#84C4FF'
-                                }}
-                                balance={'800000'}
-                                deposit={true}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'600000'}
-                                deposit={false}
-                            />
-                            <TransactionCard
-                                title={'خرید عید'}
-                                date={'1/1/1401'}
-                                circleStyle={{
-                                    backgroundColor:'#F3BB2C'
-                                }}
-                                balance={'400000'}
-                                deposit={true}
-                            />
+                            {
+                              transactions?.map(item=>{
+                                  return(
+                                    <TransactionCard
+                                        key={item.id}
+                                        title={item.name}
+                                        balance={item.price<0?item.price*-1:item.price}
+                                        data={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
+                                        circleStyle={{backgroundColor:item.color}}
+                                        deposit={item.price>0}
+                                        icon={icons.find(x=> x.id===item.icon)}
+                                    />
+                                  )
+                              })
+                          }
                         </ScrollView>
                     </View>
                 </View>
@@ -157,7 +131,7 @@ const styles = StyleSheet.create({
   },
   container:{
       flex:1,
-      marginTop:30,
+      marginTop:50,
 
       justifyContent:"flex-start",
   },

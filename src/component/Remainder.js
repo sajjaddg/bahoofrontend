@@ -23,14 +23,16 @@ const Remainder = (props) => {
               </View>
               <View style={styles.progressBox}>
                   <ProgressCircle
-                      percent={props.percent}
+                      percent={props.percent>100?100:props.percent}
                       radius={25}
                       borderWidth={2}
                       color="#5724AB"
                       shadowColor="#E9DBFF"
                       bgColor={'#FAF8F0'}
                   >
-                      <Text style={styles.percentText}>{`${props.percent}%`}</Text>
+                      <Text style={styles.percentText}>
+                        {props.percent>100?'100%':`${props.percent}%`}
+                        </Text>
                   </ProgressCircle>
               </View>
           </View>

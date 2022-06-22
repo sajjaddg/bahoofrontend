@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {View, StyleSheet, Dimensions, Text, FlatList, ScrollView} from "react-native";
+import {View, StyleSheet, Dimensions, Text, FlatList, ScrollView,TouchableWithoutFeedback} from "react-native";
 import Poster from "../../component/Poster";
 import MainCard from "../../component/MainCard";
 import Remainder from "../../component/Remainder";
@@ -10,7 +10,7 @@ import posters from "../../../assets/image/poster";
 import jalaali from "../../utils/pDate";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApiConfig from "../../utils/ApiConfig";
-
+import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 
 
 const Home = (props) => {
@@ -20,6 +20,12 @@ const Home = (props) => {
     const [invoiceBalance,setInvoiceBalance] = useState("");
     const [remainders,setRemainders] = useState([]);
     const navigation = useNavigation();
+    const [invoices,setInvoices]=useState([]);
+    const [visible, setVisible] = useState(false);
+
+    const hideMenu = () => setVisible(false);
+  
+    const showMenu = () => setVisible(true);
     const loadInvoiceFromApi= async(token,id)=> {
         let config = ApiConfig(token)
         const URL = `/invoices`;
@@ -28,8 +34,8 @@ const Home = (props) => {
                 console.log(error)
             })
             if(data.data.length){
+                setInvoices(data.data);
                 if (state.defaultInvoiceId===0) {
-                    console.log('data.data[0].id:',data.data[0].id)
                     await AsyncStorage.setItem("@defaultInvoiceId",JSON.stringify(data.data[0].id));
                     setState({...state,defaultInvoiceId:data.data[0].id})
                     setInvoiceName(data.data[0].name)
@@ -66,7 +72,11 @@ const Home = (props) => {
             console.log(e.response)
         }
     }
-
+    const handleInvoicePress = async(id)=>{
+        await AsyncStorage.setItem("@defaultInvoiceId",JSON.stringify(id));
+        setState({...state,defaultInvoiceId:id})
+        hideMenu()
+    }
     useEffect(()=>{
         loadInvoiceFromApi(state.data.access,state.defaultInvoiceId)
         if(state.defaultInvoiceId!==0) {
@@ -77,9 +87,27 @@ const Home = (props) => {
       <View style={styles.container}
       >
         <View style={styles.header}>
-            <View style={[styles.circles,{backgroundColor: invoiceColor?invoiceColor:'#FFC1C1'}]}>
+                <View>
+                    <Menu
+                        visible={visible}
+                        anchor={<TouchableWithoutFeedback onPress={showMenu}>
+                            <View style={[styles.circles,{backgroundColor: invoiceColor?invoiceColor:'#FFC1C1'}]}>
 
-            </View>
+                            </View>
+                        </TouchableWithoutFeedback>}
+                        onRequestClose={hideMenu}
+                        style={{marginTop:60 , backgroundColor:'#FAF8F0'}}
+                    >
+                        {invoices.map((item)=>{
+                            return(
+                                <MenuItem key={item.id} textStyle={[styles.headerText,{textAlign:'right',fontSize:16}]}onPress={()=>handleInvoicePress(item.id)}>{item.name}</MenuItem>
+                            )
+                        })}
+                        <MenuItem disabled>Disabled item</MenuItem>
+                        <MenuDivider />
+                        <MenuItem onPress={hideMenu}>Menu item 4</MenuItem>
+                    </Menu>
+                </View>
             <View style={styles.headerTextBox}>
                 <Text style={styles.headerText}>{invoiceName}</Text>
             </View>
@@ -130,7 +158,7 @@ const Home = (props) => {
                                   title={remainder.name}
                                   date={x}
                                   iconid={remainder.icon}
-                                  percent={21}
+                                  percent={parseInt(remainder.spent_percentage)}
                                   borderColor={remainder.color}
                                   onPress={()=>{ navigation.navigate('RemainderDetail',{id:remainder.id})}}
                               />
@@ -157,7 +185,8 @@ const styles= StyleSheet.create({
         justifyContent: "flex-start",
         alignItems:"center",
         marginTop:50,
-        marginHorizontal:30
+        marginHorizontal:30,
+        
     },
     circles:{
         borderRadius: 30,

@@ -2,7 +2,7 @@ import React, {useContext, useState} from "react";
 import {View, StyleSheet, TouchableOpacity, Image} from "react-native";
 import InputBox from "../../../component/InputBox";
 import DatePickerJalali from "../../../component/DatePickerJalali";
-import CircleProfilePickerRemainder from "../../../component/CircleProfilePickerRemainder";
+import CircleProfilePicker from "../../../component/CircleProfilePicker";
 import SubmitButton from "../../../component/SubmitButton";
 import {AuthContext} from "../../../../Context/auth";
 import jalaali from '../../../utils/pDate'
@@ -61,7 +61,7 @@ const AddReminder = () => {
       <View style={styles.body}>
           <View style={styles.container}>
               <View style={styles.iconPickerBox}>
-                  <CircleProfilePickerRemainder setIcon={setIcon} icon={icon}/>
+                  <CircleProfilePicker setIcon={setIcon} icon={icon}/>
               </View>
               <View style={styles.textInputBox}>
                 <InputBox placeholder={'نام ریمایندر'}

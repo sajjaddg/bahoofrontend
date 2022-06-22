@@ -27,7 +27,8 @@ const Loader = (props) => {
                 // const {data} = await axios.get('/auth/status/')
                 const {data} = await axios.get('/auth/status/', ApiConfig(state.data.access))
             }catch (e) {
-                console.log(e);
+                console.log(e.response);
+                console.log("hereeeeeeeeeeeeeeeeeeeeeee : ",e.response.status);
                 if(e.response.status===401){
                     try{
                         const {data} = await axios.post('auth/login/refresh/', {refresh:state.data.refresh})

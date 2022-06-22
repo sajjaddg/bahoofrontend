@@ -10,7 +10,7 @@ import Svg9 from "./000009.svg"
 import Svg10 from "./000010.svg"
 import Svg11 from "./000011.svg"
 import Svg12 from "./000012.svg"
-const icon = [
+const remainderIcon = [
     {
         id:'i000001',
         src: require('../remainderIcon/000001.png'),
@@ -86,4 +86,4 @@ const icon = [
 
 
 ]
-export default icon;
+export default remainderIcon;

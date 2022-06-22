@@ -4,7 +4,6 @@ import Svg1 from '../../assets/image/remainderIcon/000001.svg'
 const IconPicker = (props) => {
     const icons = [];
     props.icons?.map((icon)=>{
-        console.log(icon);
         icons.push(
             <TouchableWithoutFeedback  key={icon.border} onPress={()=>{
                 props.setVisible(false)

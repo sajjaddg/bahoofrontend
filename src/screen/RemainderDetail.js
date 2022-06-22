@@ -1,6 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {View, Text, StyleSheet, TextInput, ScrollView, Dimensions, TouchableOpacity} from 'react-native'
-import CircleIcon from "../component/CircleIcon";
+import {View, Text, StyleSheet, TextInput, ScrollView, Dimensions,FlatList, TouchableOpacity,TouchableHighlight} from 'react-native'
 import BalanceProgressBar from "../component/BalanceProgressBar";
 import DateProgressBar from "../component/DateProgressBar";
 import TransactionCard from "../component/TransactionCard";
@@ -9,6 +8,9 @@ import axios from "axios";
 import {AuthContext} from "../../Context/auth";
 import icon from "../../assets/image/remainderIcon";
 import jalaali from "../utils/pDate";
+import icons from "../../assets/image/tagicon";
+
+
 
 const RemainderDetail = (props) => {
     const [showDatePicker,setShowDatePicker] = useState(false);
@@ -18,6 +20,11 @@ const RemainderDetail = (props) => {
     const[svgIcon,setSvgIcon] = useState('');
     const [balance,setBalance] = useState('');
     const [date,setDate] = useState('');
+    const [createDate,setCreateDate] = useState('');
+    const[spentPercentage,setSpentPercentage] = useState(0);
+    const[dateSpent,setDateSpent] = useState(0);
+    const[transactions,setTransactions] = useState([]);
+    const[spent,setSpent] = useState(0);
     const loadRemainderFromApi= async(token, invoiceId,remainderId)=> {
         let config = {
             headers: {
@@ -28,15 +35,19 @@ const RemainderDetail = (props) => {
         const URL = `/invoices/${invoiceId}/reminders/${remainderId}`;
         try {
             const {data} = await axios.get(URL, config).then((response)=>{
-                console.log(response.data.data)
+                //console.log(response.data.data);
                 setTitle(response.data.data.name)
                 setBorderColor(response.data.data.color)
                 setBalance(response.data.data.balance)
+                setSpentPercentage(response.data.data.spent_percentage)
                 let Svg = icon.find(x=> x.id===response.data.data.icon)
                 let date =response.data.data.due_date.split('-')
-                const jalali = jalaali.getJalali(new Date(parseInt(date[0]),parseInt(date[1])-1,parseInt(date[2])))
-                const x = jalaali.formatJalaali(jalali)
-                setDate(x)
+                setSpent(Math.abs(response.data.data.spent))
+                const due_date = new Date(parseInt(date[0]),parseInt(date[1])-1,parseInt(date[2]))
+                const jalali_due_date = jalaali.getJalali(due_date)
+                setDateSpent((due_date.getTime() - (new Date()).getTime()) / (due_date.getTime() - (new Date(response.data.data.created_at)).getTime()) * 100)
+                setCreateDate(jalaali.formatJalaali(jalaali.getJalali(new Date(response.data.data.created_at))));
+                setDate(jalaali.formatJalaali(jalali_due_date))
                 setSvgIcon(Svg)
             }).catch(error => {
                 console.log(error)
@@ -47,8 +58,25 @@ const RemainderDetail = (props) => {
             console.log(e.response)
         }
     }
+      
+    const loadTransactionFromApi= async(token, invoiceId,remainderId)=> {
+        try {
+            let config = {
+                headers: {
+                    Authorization: 'Bearer ' + token
+                }
+            }
+            const URL = `invoices/${invoiceId}/reminders/${remainderId}/transactions/`
+            await axios.get(URL,config).then((response)=>{
+                setTransactions(response.data.data);
+            })
+        } catch (error) {
+            console.log('loadTransactionFromApi RemainderDetail:',error);
+        }
+    }
     useEffect(()=>{
         loadRemainderFromApi(state.data.access, state.defaultInvoiceId,props.route.params.id)
+        loadTransactionFromApi(state.data.access, state.defaultInvoiceId,props.route.params.id)
     },[props.route])
   return(
       <View style={styles.body}>
@@ -72,17 +100,17 @@ const RemainderDetail = (props) => {
                 <View>
                     <BalanceProgressBar
                         bgcolor={"#6a1b9a"}
-                        completed={80}
-                        firstText={0}
+                        completed={spentPercentage>100?100:spentPercentage}
+                        firstText={spent}
                         scenedText={balance}
                     />
                 </View>
                 <View>
                     <DateProgressBar
                         bgcolor={"#16B58F"}
-                        completed={80}
+                        completed={dateSpent}
                         setShowDatePicker={setShowDatePicker}
-                        firstText={0}
+                        firstText={createDate}
                         scenedText={date}
                     />
                 </View>
@@ -96,7 +124,12 @@ const RemainderDetail = (props) => {
               </View>
               <View style={styles.transaction}>
                   <View style={styles.transactionHeader}>
-                    <TouchableOpacity style={styles.circle}>
+                    <TouchableOpacity 
+                        style={styles.circle}
+                        onPress={()=>{
+                            props.navigation.navigate('Add')
+                        }}
+                    >
                         <Text style={{color:'#5724AB',fontSize:40}}>+</Text>
                     </TouchableOpacity>
                       <Text style={styles.transactionHeaderText}>اضافه کردن یک تراکنش</Text>
@@ -110,38 +143,27 @@ const RemainderDetail = (props) => {
                           showsVerticalScrollIndicator={false}
 
                       >
-                          <TransactionCard
-                              title={'سفر بوشهر'}
-                              date={'1/5/1401'}
-                              circleStyle={{
-                                  backgroundColor:'#84C4FF'
-                              }}
-                              balance={'800000'}
-                              deposit={true}
-                          />
-                          <TransactionCard
-                              title={'خرید عید'}
-                              date={'1/1/1401'}
-                              circleStyle={{
-                                  backgroundColor:'#F3BB2C'
-                              }}
-                              balance={'600000'}
-                              deposit={false}
-                          />
-                          <TransactionCard
-                              title={'خرید عید'}
-                              date={'1/1/1401'}
-                              circleStyle={{
-                                  backgroundColor:'#F3BB2C'
-                              }}
-                              balance={'400000'}
-                              deposit={true}
-                          />
-                      </ScrollView>
-                  </View>
+                          {
+                              transactions?.map(item=>{
+                                  return(
+                                        <TransactionCard
+                                            key={item.id}
+                                            title={item.name}
+                                            balance={item.price<0?item.price*-1:item.price}
+                                            data={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
+                                            circleStyle={{backgroundColor:item.color}}
+                                            deposit={item.price>0}
+                                            icon={icons.find(x=> x.id===item.icon)}
+                                        />
+                                        
+                                  )
+                              })
+                          }
+                      </ScrollView> 
               </View>
               <DatePickerJalali visible={showDatePicker} setVisible={setShowDatePicker}/>
           </View>
+      </View>
       </View>
   )
 }
@@ -149,10 +171,12 @@ const styles = StyleSheet.create({
     body:{
         backgroundColor:'#FAF8F0',
         flex:1,
+        
     },
     container:{
         flex:1,
         marginHorizontal:20,
+        marginTop:10
     },
     header:{
         marginTop:40,

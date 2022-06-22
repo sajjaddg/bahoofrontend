@@ -61,7 +61,7 @@ const Reminder = (props) => {
                                               title={remainder.name}
                                               date={x}
                                               iconid={remainder.icon}
-                                              percent={21}
+                                              percent={parseInt(remainder.spent_percentage)}
                                               borderColor={remainder.color}
                                               onPress={()=>{ navigation.navigate('RemainderDetail',{id:remainder.id})}}
                                    />

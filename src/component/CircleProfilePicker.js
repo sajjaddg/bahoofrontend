@@ -4,7 +4,7 @@ import ColorPicker from "./ColorPicker";
 import IconPicker from "./IconPicker";
 import icon from "../../assets/image/remainderIcon";
 
-const CircleProfilePickerRemainder = (props) => {
+const CircleProfilePicker = (props) => {
 
     const [icons,setIcons] = useState(icon);
     const [selectedIcon,setSelectedIcon] = useState(props.icon);
@@ -57,4 +57,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default CircleProfilePickerRemainder;
+export default CircleProfilePicker;
