@@ -16,7 +16,6 @@ import BouncyCheckboxGroup, {
 
 
 
-
 const AddTransaction = (props) => {
     const [state,setState] = useContext(AuthContext);
     const [tagOpen, setTagOpen] = useState(false);
@@ -106,19 +105,18 @@ const AddTransaction = (props) => {
                             }
                             )
                     });
-                    setTags(x)
+                    return x
                 }
-            ).catch(error => {
+            ).then((x)=>{setTags(x)}).catch(error => {
                 console.log(error)
             })
-            console.log(data)
         }
         catch (e) {
-            console.log(e.response)
+            console.log(e)
         }
     }
     const loadRemaindersFromApi= async(token,id)=> {
-        console.log('inja hasim');
+       
         let config = {
             headers: {
                 Authorization: 'Bearer ' + token
@@ -147,10 +145,10 @@ const AddTransaction = (props) => {
             }).catch(error => {
                 console.log(error)
             })
-            console.log(data)
+            
         }
         catch (e) {
-            console.log(e.response)
+            console.log(e)
         }
     }
     const pressSubmit = async ()=>{

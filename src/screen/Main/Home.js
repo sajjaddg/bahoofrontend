@@ -103,9 +103,9 @@ const Home = (props) => {
                                 <MenuItem key={item.id} textStyle={[styles.headerText,{textAlign:'right',fontSize:16}]}onPress={()=>handleInvoicePress(item.id)}>{item.name}</MenuItem>
                             )
                         })}
-                        <MenuItem disabled>Disabled item</MenuItem>
+                        {/* <MenuItem disabled>Disabled item</MenuItem> */}
                         <MenuDivider />
-                        <MenuItem onPress={hideMenu}>Menu item 4</MenuItem>
+                        <MenuItem  textStyle={[styles.headerText,{textAlign:'center',fontSize:14}]}onPress={()=>navigation.navigate('CreateInvoice')}>حساب جدید</MenuItem>
                     </Menu>
                 </View>
             <View style={styles.headerTextBox}>

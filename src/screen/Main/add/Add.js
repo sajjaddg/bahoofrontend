@@ -4,6 +4,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import AddReminder from "./AddReminder";
 import AddTransaction from "./AddTransaction";
 
+
 const Tab = createMaterialTopTabNavigator();
 
 const Add =()=>{
@@ -24,6 +25,7 @@ const Add =()=>{
                             borderRadius:4
                         }
                     }}
+                    
                 >
                     <Tab.Screen name="AddReminder" component={AddReminder} options={{
                         tabBarLabel:({focused,title})=>{
@@ -42,7 +44,7 @@ const Add =()=>{
                         }
                     }}
                     listeners={({ navigation }) => ({
-                        blur: () => navigation.setParams({ screen: 'undefined' }),
+                        focus: () => navigation.setParams({ screen: 'undefined' }),
                       })}
                     />
                 </Tab.Navigator>
