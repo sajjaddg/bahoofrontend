@@ -150,7 +150,7 @@ const RemainderDetail = (props) => {
                                             key={item.id}
                                             title={item.name}
                                             balance={item.price<0?item.price*-1:item.price}
-                                            data={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
+                                            date={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
                                             circleStyle={{backgroundColor:item.color}}
                                             deposit={item.price>0}
                                             icon={icons.find(x=> x.id===item.icon)}

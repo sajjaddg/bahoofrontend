@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
         textAlign:"right",
         fontSize:18,
         marginLeft:10,
+        marginBottom:15,
         color:'#8A7F9D',
         fontFamily:'Shabnam-FD',
     },

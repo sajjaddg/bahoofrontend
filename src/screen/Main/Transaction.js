@@ -7,13 +7,17 @@ import axios from "axios";
 import icons from "../../../assets/image/tagicon";
 import jalaali from "../../utils/pDate";
 import {useNavigation} from "@react-navigation/native";
+import icon from "../../../assets/image/remainderIcon";
+
 
 const Transaction = (props) => {
     const [state,setState] = useContext(AuthContext);
-    const[tags,setTags] = useState([]);
+    const [tags,setTags] = useState([]);
     const navigation = useNavigation();
-    const[transactions,setTransactions] = useState([]);
-
+    const [transactions,setTransactions] = useState([]);
+    const [filteredTransactions,setFilteredTransactions] = useState([]);
+    const [filter,setFilter] = useState(false);
+    const [remainders,setRemainders] = useState([]);
     const loadTransactionFromApi= async(token, invoiceId)=> {
         let config = {
             headers: {
@@ -55,16 +59,64 @@ const Transaction = (props) => {
             console.log(e.response)
         }
     }
+    const loadFilterTransactionsFromApi= async(token, invoiceId,id)=>{
+        let config = {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        }
+        const URL = `/invoices/${invoiceId}/transactions?has_tag=${id}`;
+        try {
+            const {data} = await axios.get(URL, config).then((response)=>{
+                console.log(response);
+                setFilteredTransactions(response.data.data)
+            }).catch(error => {
+                console.log(error)
+            })
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+    const loadFilterRimaindersFromApi=async(token, invoiceId,id)=>{
+        let config = {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        }
+        const URL = `/invoices/${invoiceId}/reminders?used_tag=${id}`;
+        try {
+            const {data} = await axios.get(URL, config).then((response)=>{
+                console.log(response);
+                setRemainders(response.data.data)
+            }).catch(error => {
+                console.log(error)
+            })
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
     useEffect(()=>{
         const unsubscribe = navigation.addListener('tabPress', (e) => {
             loadTransactionFromApi(state.data.access,state.defaultInvoiceId);
             loadTagsFromApi(state.data.access,state.defaultInvoiceId);
+            setFilter(false)
+            setRemainders([])
             navigation.navigate('Transaction')
         })
         loadTagsFromApi(state.data.access,state.defaultInvoiceId);
+        setFilter(false)
+        setRemainders([])
         loadTransactionFromApi(state.data.access,state.defaultInvoiceId);
     },[props.navigation])
-    return(
+    const handleFilterPress=(id)=>{
+        setFilter(true)
+        loadFilterTransactionsFromApi(state.data.access,state.defaultInvoiceId,id)
+        loadFilterRimaindersFromApi(state.data.access,state.defaultInvoiceId,id)
+    }
+    const body = (
         <View style={styles.body}>
             <View style={styles.container}>
                 <View style={styles.categories}>
@@ -83,6 +135,7 @@ const Transaction = (props) => {
                                         title={item.name}
                                         circleStyle={{backgroundColor: item.color}}
                                         icon={icons.find(icon=>icon.id===item.icon)}
+                                        onpress={()=>handleFilterPress(item.id)}
                                     />
                                 )
                             })}
@@ -109,7 +162,7 @@ const Transaction = (props) => {
                                         key={item.id}
                                         title={item.name}
                                         balance={item.price<0?item.price*-1:item.price}
-                                        data={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
+                                        date={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
                                         circleStyle={{backgroundColor:item.color}}
                                         deposit={item.price>0}
                                         icon={icons.find(x=> x.id===item.icon)}
@@ -123,6 +176,77 @@ const Transaction = (props) => {
             </View>
         </View>
     )
+    const filterBody=(
+        <View style={styles.body}>
+            <View style={[styles.container,{marginTop:70,marginRight:15}]}>
+                <View style={[styles.filterHederBody,{alignItems:'center' , justifyContent:"flex-start",flexDirection:'row-reverse'}]}>
+                    <View>
+                        <CircleIcon
+                            key={tags[0]?.id}
+                            circleStyle={{backgroundColor: tags[0]?.color,width:60,height:60}}
+                            icon={icons.find(icon=>icon.id===tags[0]?.icon)}
+                        />
+                    </View>
+                    <View>
+                        <Text style={[styles.title,{marginRight:0,marginTop:8}]}> {tags[0]?.name} </Text>
+                    </View>
+                </View>
+                <View style={{marginTop:50}}>
+                        <ScrollView
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                            style={{flexDirection: 'row-reverse'}}
+                        >
+                            {remainders?.map(item=>{
+                                return(
+                                    <CircleIcon
+                                        key={item.id}
+                                        title={item.name}
+                                        circleStyle={{backgroundColor: 'transparent',borderWidth:2,borderColor:item.color ,width:65,height:65}}
+                                        icon={icon.find(icon=>icon.id===item.icon)}
+                                        onpress={()=>{navigation.navigate('RemainderDetail',{id:item.id})}}
+
+                                    />
+                                )
+                            })}
+                        </ScrollView>
+                    </View>
+                    <View style={styles.transactions}>
+                    <View>
+                        <Text style={[styles.title,{marginTop:30}]}> تراکنش ها </Text>
+                    </View>
+                    <View
+                        style={
+                            {height:'97%' , paddingBottom:70, alignItems:'center'}
+                        }
+                    >
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+
+                        >
+                            {
+                              filteredTransactions?.map(item=>{
+                                  return(
+                                    <TransactionCard
+                                        key={item.id}
+                                        title={item.name}
+                                        balance={item.price<0?item.price*-1:item.price}
+                                        date={jalaali.formatJalaali(jalaali.getJalali(new Date(item.created_at)))}
+                                        circleStyle={{backgroundColor:item.color}}
+                                        deposit={item.price>0}
+                                        icon={icons.find(x=> x.id===item.icon)}
+                                    />
+                                  )
+                              })
+                          }
+                        </ScrollView>
+                    </View>
+                </View>   
+            </View>
+        </View>
+        
+    )
+    return(filter?filterBody:body)
 }
 const styles = StyleSheet.create({
   body:{
@@ -132,7 +256,6 @@ const styles = StyleSheet.create({
   container:{
       flex:1,
       marginTop:50,
-
       justifyContent:"flex-start",
   },
   categories:{

@@ -1,8 +1,12 @@
 import React from "react";
-import {View, StyleSheet, Dimensions,Text} from "react-native";
+import {View, StyleSheet, Dimensions,Text,TouchableWithoutFeedback} from "react-native";
+
 
 const CircleIcon = (props) => {
   return(
+    <TouchableWithoutFeedback
+        onPress={props.onpress}
+    >
       <View style={styles.iconBox}>
           <View style={[styles.circle,props.circleStyle]}>
               {props.iconDisable?
@@ -26,6 +30,7 @@ const CircleIcon = (props) => {
           }
 
       </View>
+      </TouchableWithoutFeedback>
   )
 }
 const styles = StyleSheet.create({
