@@ -1,6 +1,9 @@
 import React from "react";
 import {View, StyleSheet, Text, Dimensions} from "react-native";
 import {ReactNativeNumberFormat} from "../utils/ReactNativeNumberFormat";
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import {faArrowDown} from '@fortawesome/free-solid-svg-icons/faArrowDown'
+import {faArrowUp} from '@fortawesome/free-solid-svg-icons/faArrowUp'
 
 const MainCard = (props) => {
   return(
@@ -11,20 +14,16 @@ const MainCard = (props) => {
           <View style={styles.mainCardsDown}>
               <View style={styles.depositBox}>
                 <View style={styles.circle}>
-                    
+                <FontAwesomeIcon icon={faArrowDown} style={{color:'#EC4141'}}/>
                 </View>
-                  <Text style={styles.depositText}>
-                      2,576,000
-                  </Text>
+                  <ReactNativeNumberFormat textStyle={styles.depositText} value={props.totalSpent}/>
+                  
               </View>
               <View style={styles.depositBox}>
                   <View style={styles.circle}>
-                      
+                      <FontAwesomeIcon icon={faArrowUp} style={{color:'#16B555'}} />
                   </View>
-                  <Text style={styles.depositText}>
-                      1,342,500
-                  </Text>
-
+                  <ReactNativeNumberFormat textStyle={styles.depositText} value={props.totalGain}/>
               </View>
           </View>
       </View>

@@ -32,6 +32,7 @@ const Loader = (props) => {
                 if(e.response.status===401){
                     try{
                         const {data} = await axios.post('auth/login/refresh/', {refresh:state.data.refresh})
+                        console.log('data',data);
                         setState({...state,data:{access:data.access}})
                         await AsyncStorage.setItem("@auth",JSON.stringify(state.data));
                         return;

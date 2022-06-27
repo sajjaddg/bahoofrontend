@@ -19,6 +19,8 @@ const Home = (props) => {
     const [invoiceColor,setInvoiceColor] = useState("");
     const [invoiceBalance,setInvoiceBalance] = useState("");
     const [remainders,setRemainders] = useState([]);
+    const [invoiceTotalSpent,setInvoiceTotalSpent] = useState('');
+    const [invoiceTotalGain,setInvoiceTotalGain] = useState('');
     const navigation = useNavigation();
     const [invoices,setInvoices]=useState([]);
     const [visible, setVisible] = useState(false);
@@ -41,12 +43,16 @@ const Home = (props) => {
                     setInvoiceName(data.data[0].name)
                     setInvoiceColor(data.data[0].color)
                     setInvoiceBalance(data.data[0].balance)
+                    setInvoiceTotalSpent(data.data[0].total_spent)
+                    setInvoiceTotalGain(data.data[0].total_gain)
                 }
                 else {
                    let defaultInvoice = data.data.find(x=>x.id ===state.defaultInvoiceId)
                     setInvoiceName(defaultInvoice.name)
                     setInvoiceColor(defaultInvoice.color)
                     setInvoiceBalance(defaultInvoice.balance)
+                    setInvoiceTotalSpent(defaultInvoice.total_spent)
+                    setInvoiceTotalGain(defaultInvoice.total_gain)
                 }
             }else{
                 navigation.navigate('CreateInvoice')
@@ -132,7 +138,7 @@ const Home = (props) => {
             </ScrollView>
           </View>
           <View style={styles.cards}>
-            <MainCard balance={invoiceBalance}/>
+            <MainCard balance={invoiceBalance} totalSpent={invoiceTotalSpent} totalGain={invoiceTotalGain}/>
           </View>
           <View style={styles.main}>
             <View style={styles.mainTiterBox}>
