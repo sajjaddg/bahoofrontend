@@ -19,7 +19,7 @@ used for managing budgets
 </ul>
 
 # ‌Back-End
-You can see the Back-End of the project from this : [Link](https://github.com/AtodSe/Backend "Back-End")
+You can see the Back-End of the project from this [Link](https://github.com/AtodSe/Backend "Back-End")
 
 # Screenshots
 
